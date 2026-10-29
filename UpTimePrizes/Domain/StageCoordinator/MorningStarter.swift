@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 // MARK: - MorningStarter
 //
@@ -20,6 +21,23 @@ enum MorningStarter {
         return manager
     }()
     static let stages = StageCoordinator()
+
+    // MARK: - Downloaded music is found before a song is chosen
+
+    /// Looks up where every owned journey's downloaded music is, before a
+    /// morning picks its song. When the doorbell's answer cold-launches the
+    /// app, the song used to be chosen first: the journey's files were on
+    /// the phone but not yet looked up, so a Genesis song stood in and the
+    /// journey did not move (founder's phone, 29 Oct 11:39:21 — warm-front
+    /// reported 8/8 on this phone 45 seconds later). Each journey's result
+    /// is logged by DeliveryManager, so the lookup is visible before the song.
+    static func lookUpDownloadedMusic() async {
+        let context = UpTimePrizesApp.sharedContainer.mainContext
+        let owned = ((try? context.fetch(FetchDescriptor<JourneyEntity>())) ?? [])
+            .filter { $0.purchaseState != "NOT_OWNED" }
+            .map(\.id)
+        await DeliveryManager.shared.refresh(ownedJourneyIds: owned)
+    }
 
     // MARK: - The card's pause is the snooze (founder, 2026-10-09)
 

@@ -106,6 +106,10 @@ enum LockScreenAnswer {
 
         AlarmRingLog.recordAnswered()
         PendingMorningStart.record()
+        // A cold launch has not looked up the downloaded music yet; choose
+        // the song only once it has (29 Oct: a Genesis song stood in for a
+        // Warm Front song that was on the phone).
+        await MorningStarter.lookUpDownloadedMusic()
         await MainActor.run {
             UpTimeLog.alarm.notice("[ALARM] \(how, privacy: .public) — starting the morning on the lock screen")
             MorningStarter.startFromLockScreen()

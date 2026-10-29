@@ -171,15 +171,25 @@ struct ContentView: View {
                         }
                         if (audioManager.isPlaying || audioManager.isPaused) && stageCoordinator.currentSong != nil {
                             // Already playing — started from the lock screen.
-                        } else if let song = engine.currentSong(from: audioManager) {
-                            let sub = engine.subdirectory(for: song.journeyId)
-                            // A snooze return resumes one stage further (§2.1).
-                            stageCoordinator.startAlarm(
-                                song: song,
-                                subdirectory: sub,
-                                audioManager: audioManager,
-                                startingAt: StageCoordinator.stage(forRuleName: engine.consumeResumeStage())
-                            )
+                        } else {
+                            // The downloaded music is looked up before the
+                            // song is chosen (a cold launch otherwise picks
+                            // a Genesis stand-in for a song on the phone).
+                            Task { @MainActor in
+                                await MorningStarter.lookUpDownloadedMusic()
+                                // Started another way while looking? Then
+                                // that morning is the one; never start twice.
+                                guard !((audioManager.isPlaying || audioManager.isPaused) && stageCoordinator.currentSong != nil),
+                                      let song = engine.currentSong(from: audioManager) else { return }
+                                let sub = engine.subdirectory(for: song.journeyId)
+                                // A snooze return resumes one stage further (§2.1).
+                                stageCoordinator.startAlarm(
+                                    song: song,
+                                    subdirectory: sub,
+                                    audioManager: audioManager,
+                                    startingAt: StageCoordinator.stage(forRuleName: engine.consumeResumeStage())
+                                )
+                            }
                         }
                     }
                 }
