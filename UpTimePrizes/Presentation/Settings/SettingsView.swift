@@ -26,6 +26,9 @@ struct SettingsView: View {
     @State private var selectedRepeatDays: Set<Int> = []
     @State private var showJourneySelector: Bool = false
     @State private var showDebug: Bool = false
+    @State private var referralInput: String = ""
+    @State private var referralSaved: String? = ReferralCode.savedCode
+    @State private var referralMessage: String?
 
     private var alarm: AlarmEntity? { alarms.first }
     private var catalogOpen: Bool {
@@ -48,6 +51,12 @@ struct SettingsView: View {
                         SectionEyebrow(text: "YOUR CATALOG")
                         yourCatalogCard
                     }
+
+                    // One code, both phones (founder, 8 Nov 2026); label ruled
+                    // the same as Android build 68. Not gated on day nine: a
+                    // code entered on day one is in place for the first purchase.
+                    SectionEyebrow(text: "REFERRAL CODE")
+                    referralCard
 
                     SectionEyebrow(text: "ABOUT")
                     aboutCard
@@ -225,6 +234,82 @@ struct SettingsView: View {
             }
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - REFERRAL CODE
+    //
+    // Android's card (SettingsPage.kt ReferralCodeCard), line for line, except
+    // the saved message: Android reports the code to its backend, the iPhone
+    // never does, so there is nothing to wait on and nothing to confirm. All
+    // copy is Android's placeholder until the Curator words it.
+
+    private var referralCard: some View {
+        PlaqueCard {
+            Text("Did someone send you?")
+                .font(.playfair(15, semibold: true))
+                .foregroundColor(BrassPaper.brassHighlight.opacity(0.9))
+                .plaqueTextShadow()
+            Spacer().frame(height: 4)
+            Text("Enter their code and they're credited for anything you buy here.")
+                .font(.playfair(12))
+                .foregroundColor(BrassPaper.brassHighlight.opacity(0.85))
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+            if let referralSaved {
+                Spacer().frame(height: 6)
+                Text("Your code: \(referralSaved)")
+                    .font(.playfair(13, semibold: true))
+                    .foregroundColor(BrassPaper.brassHighlight)
+            }
+            Spacer().frame(height: 10)
+            TextField("", text: $referralInput,
+                      prompt: Text(referralSaved == nil ? "Code" : "Change code")
+                        .foregroundColor(BrassPaper.brassHighlight.opacity(0.7)))
+                .font(.playfair(15))
+                .foregroundColor(BrassPaper.brassHighlight)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .keyboardType(.asciiCapable)
+                .submitLabel(.done)
+                .onSubmit(saveReferral)
+                .onChange(of: referralInput) { _, new in
+                    if new.count > 64 { referralInput = String(new.prefix(64)) }
+                }
+                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .sunkenBrass(cornerRadius: 8)
+            Spacer().frame(height: 10)
+            Button(action: saveReferral) {
+                Text("SAVE CODE")
+                    .font(.playfair(13, semibold: true))
+                    .tracking(3.0)
+                    .foregroundColor(BrassPaper.raisedInk)
+                    .shadow(color: BrassPaper.raisedLabelShadow, radius: 0, x: 0, y: 1)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 46)
+                    .raisedBrass(cornerRadius: 8)
+            }
+            .buttonStyle(.plain)
+            if let referralMessage {
+                Spacer().frame(height: 8)
+                Text(referralMessage)
+                    .font(.playfair(12))
+                    .foregroundColor(BrassPaper.brassHighlight.opacity(0.9))
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func saveReferral() {
+        guard !referralInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        if let code = ReferralCode.save(referralInput) {
+            referralSaved = code
+            referralInput = ""
+            referralMessage = "Saved. Code \(code) is on this phone."
+        } else {
+            referralMessage = ReferralCode.invalidMessage
+        }
     }
 
     // MARK: - ABOUT

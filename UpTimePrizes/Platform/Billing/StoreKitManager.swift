@@ -85,6 +85,7 @@ class StoreKitManager: ObservableObject {
 
     func configure(context: ModelContext) {
         self.context = context
+        ReferralCode.logLaunchState()
         Task {
             await fetchProducts()
             await restorePurchases()
@@ -114,13 +115,21 @@ class StoreKitManager: ObservableObject {
     // MARK: - Purchase
 
     func purchase(_ product: Product) async throws -> Transaction? {
-        UpTimeLog.store.notice("[STORE] purchase started: \(product.id, privacy: .public) \(product.displayPrice, privacy: .public)")
-        let result = try await product.purchase()
+        // The referral code saved on this phone, if any, travels with the
+        // purchase as appAccountToken; Apple carries it to the notifications
+        // endpoint. No code → no token → no referral. Fixed per purchase.
+        let code = ReferralCode.savedCode
+        let token = ReferralCode.currentToken
+        var options: Set<Product.PurchaseOption> = []
+        if let token { options.insert(.appAccountToken(token)) }
+        UpTimeLog.store.notice("[STORE] purchase started: \(product.id, privacy: .public) \(product.displayPrice, privacy: .public) referral=\(code ?? "none", privacy: .public) token=\(token?.uuidString.lowercased() ?? "none", privacy: .public)")
+        let result = try await product.purchase(options: options)
         switch result {
         case .success(let verification):
             let transaction = try checkVerified(verification)
             await transaction.finish()
-            UpTimeLog.store.notice("[STORE] purchase verified: \(product.id, privacy: .public)")
+            // What Apple actually recorded on the transaction, not what was sent.
+            UpTimeLog.store.notice("[STORE] purchase verified: \(product.id, privacy: .public) appAccountToken=\(transaction.appAccountToken?.uuidString.lowercased() ?? "none", privacy: .public)")
             applyEntitlement(productID: product.id, isNewPurchase: true)
             return transaction
         case .userCancelled:

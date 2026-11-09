@@ -10,7 +10,7 @@ import os
 // spec without anyone touching the phone.
 //
 // Messages that the routine matches on are stable, greppable prefixes:
-// [ALARM], [AUDIO], [MORNING], [SEED], [STORE], [DELIVERY].
+// [ALARM], [AUDIO], [MORNING], [SEED], [STORE], [DELIVERY], [REFERRAL].
 
 enum UpTimeLog {
     private static let subsystem = "com.uptimeprizes.app"
@@ -21,4 +21,5 @@ enum UpTimeLog {
     static let seed = Logger(subsystem: subsystem, category: "seed")
     static let store = Logger(subsystem: subsystem, category: "store")
     static let delivery = Logger(subsystem: subsystem, category: "delivery")
+    static let referral = Logger(subsystem: subsystem, category: "referral")
 }
