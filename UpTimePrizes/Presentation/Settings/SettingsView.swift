@@ -238,10 +238,13 @@ struct SettingsView: View {
 
     // MARK: - REFERRAL CODE
     //
-    // Android's card (SettingsPage.kt ReferralCodeCard), line for line, except
-    // the saved message: Android reports the code to its backend, the iPhone
-    // never does, so there is nothing to wait on and nothing to confirm. All
-    // copy is Android's placeholder until the Curator words it.
+    // Android's card (SettingsPage.kt ReferralCodeCard) in layout. Wording as
+    // the founder sent it, 8 Nov 2026, after the device run: the 3.1.1 line
+    // ("nothing in it for you, and nothing in the app changes") and "Saved
+    // code:" are iOS's first; Android still carries its placeholder. The saved
+    // message differs from Android's by design: the iPhone never reports the
+    // code to a server, so there is nothing to wait on and nothing to confirm.
+    // The refused-code line is still Android's placeholder.
 
     private var referralCard: some View {
         PlaqueCard {
@@ -250,14 +253,14 @@ struct SettingsView: View {
                 .foregroundColor(BrassPaper.brassHighlight.opacity(0.9))
                 .plaqueTextShadow()
             Spacer().frame(height: 4)
-            Text("Enter their code and they're credited for anything you buy here.")
+            Text("Enter their code and they are credited for anything you buy here. There is nothing in it for you, and nothing in the app changes.")
                 .font(.playfair(12))
                 .foregroundColor(BrassPaper.brassHighlight.opacity(0.85))
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
             if let referralSaved {
                 Spacer().frame(height: 6)
-                Text("Your code: \(referralSaved)")
+                Text("Saved code: \(referralSaved)")
                     .font(.playfair(13, semibold: true))
                     .foregroundColor(BrassPaper.brassHighlight)
             }
@@ -321,7 +324,9 @@ struct SettingsView: View {
                 .foregroundColor(BrassPaper.brassHighlight.opacity(0.9))
                 .plaqueTextShadow()
             Spacer().frame(height: 4)
-            Text("A warm, slow-built morning experience. The reward is the melody; the alarm is the invitation.")
+            // Founder's wording, 8 Nov 2026. Android's About still reads
+            // "A warm, slow-built morning experience…" until it is ported.
+            Text("An alarm that wakes you with original music.\n\nEach morning arrives in three stages — The Invite, The Nudge, and The Prize. One song, and you do not choose it.")
                 .font(.playfair(13))
                 .foregroundColor(BrassPaper.brassHighlight.opacity(0.85))
                 .lineSpacing(4)
