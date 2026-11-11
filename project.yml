@@ -15,7 +15,7 @@ settings:
     GENERATE_INFOPLIST_FILE: YES
     # 1.1.0 went to App Review on 14 Oct 2026 with build 150; the next
     # release, carrying the per-journey counting fix (4b0a63e), is 1.1.1.
-    MARKETING_VERSION: "1.1.1"
+    MARKETING_VERSION: "1.1.2"
     CURRENT_PROJECT_VERSION: 12
 
 
